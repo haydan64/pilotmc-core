@@ -46,6 +46,7 @@ function registerAdminRoutes({
   app.get('/admin', (req, res) => {
     res.setHeader('Cache-Control', 'no-store');
     res.send(renderTemplate(path.join(privateDir, 'admin', 'index.html'), {
+      ...config.siteTemplateValues(),
       displayName: req.user.globalName || req.user.username
     }));
   });
@@ -175,6 +176,7 @@ function registerAdminRoutes({
 
   app.get('/admin/api/users', async (req, res) => {
     try {
+      res.setHeader('Cache-Control', 'no-store');
       res.json(await fetchBackendJson('/api/admin/users'));
     } catch (err) {
       jsonError(res, err);

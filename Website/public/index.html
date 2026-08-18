@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>PilotMC</title>
+    <title>{{siteName}}</title>
     <style>
       :root {
         color-scheme: dark;
@@ -135,8 +135,8 @@
   <body>
     <main class="shell">
       <nav class="nav">
-        <a class="brand" href="/" aria-label="PilotMC home">
-          <span>PilotMC</span>
+        <a class="brand" href="/" aria-label="{{siteName}} home">
+          {{{brandLogo}}}<span>{{siteName}}</span>
         </a>
         <div class="nav-actions">
           {{{adminLink}}}
@@ -146,8 +146,8 @@
 
       <section class="hero">
         <div class="hero-copy">
-          <h1>PilotMC</h1>
-          <p>PilotMC is a configurable platform for operating Minecraft Bedrock servers, connecting Discord communities, and managing player identities.</p>
+          <h1>{{siteName}}</h1>
+          <p>{{siteDescription}}</p>
           <p>Install optional modules to add community-specific behavior without coupling it to the public platform.</p>
           <div class="hero-actions">
             <a class="button" href="{{authHref}}">{{heroAction}}</a>

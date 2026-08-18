@@ -11,6 +11,14 @@ const PORT = Number(process.env.PORT || 3001);
 const BACKEND_URL = process.env.BACKEND_URL || 'http://127.0.0.1:3000';
 const BACKEND_API_TOKEN = process.env.BACKEND_API_TOKEN || '';
 const PUBLIC_URL = process.env.PUBLIC_URL || process.env.WEBSITE_PUBLIC_URL || '';
+const SITE_NAME = String(process.env.SITE_NAME || 'PilotMC').trim() || 'PilotMC';
+const SITE_SHORT_NAME = String(process.env.SITE_SHORT_NAME || SITE_NAME).trim() || SITE_NAME;
+const SITE_DESCRIPTION = String(
+  process.env.SITE_DESCRIPTION ||
+  'A configurable platform for operating Minecraft Bedrock servers, connecting Discord communities, and managing player identities.'
+).trim();
+const SITE_LOGO_PATH = String(process.env.SITE_LOGO_PATH || '').trim();
+const SITE_FAVICON_PATH = String(process.env.SITE_FAVICON_PATH || '').trim();
 const STARTED_AT = new Date();
 const app = express();
 const publicDir = path.join(__dirname, 'public');
@@ -79,6 +87,24 @@ async function checkAdminAccess(discordUserId) {
   }
 }
 
+function siteTemplateValues() {
+  return {
+    siteName: SITE_NAME,
+    siteShortName: SITE_SHORT_NAME,
+    siteDescription: SITE_DESCRIPTION,
+    brandLogo: SITE_LOGO_PATH
+      ? `<img class="brand-logo" src="/assets/brand-logo.png" alt="${escapeHtml(SITE_NAME)} logo">`
+      : ''
+  };
+}
+
+function sendConfiguredAsset(res, configuredPath) {
+  if (!configuredPath) return res.sendStatus(404);
+  return res.sendFile(path.resolve(configuredPath), (err) => {
+    if (err && !res.headersSent) res.sendStatus(err.statusCode || 404);
+  });
+}
+
 function adminLinkHtml(isAdmin) {
   return isAdmin ? '<a class="nav-button secondary" href="/admin">Admin</a>' : '';
 }
@@ -88,6 +114,9 @@ function discordWidgetHtml() {
   if (!/^\d{16,20}$/.test(guildId)) return '';
   return `<iframe src="https://discord.com/widget?id=${guildId}&theme=dark" width="350" height="500" allowtransparency="true" frameborder="0" sandbox="allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts"></iframe>`;
 }
+
+app.get('/assets/brand-logo.png', (req, res) => sendConfiguredAsset(res, SITE_LOGO_PATH));
+app.get('/favicon.ico', (req, res) => sendConfiguredAsset(res, SITE_FAVICON_PATH));
 
 registerAdminRoutes({
   app,
@@ -100,7 +129,8 @@ registerAdminRoutes({
   Log,
   config: {
     publicUrl: PUBLIC_URL,
-    startedAt: STARTED_AT.toISOString()
+    startedAt: STARTED_AT.toISOString(),
+    siteTemplateValues
   }
 });
 
@@ -110,6 +140,7 @@ app.get('/', async (req, res) => {
   const adminAccess = user?.id ? await checkAdminAccess(user.id) : { allowed: false };
   res.setHeader('Cache-Control', 'no-store');
   res.send(renderTemplate(path.join(publicDir, 'index.html'), {
+    ...siteTemplateValues(),
     authHref: user ? '/profile' : '/login?redirect=profile',
     authLabel: user ? 'Profile' : 'Log in with Discord',
     heroAction: user ? 'View Profile' : 'Log in with Discord',
@@ -122,6 +153,7 @@ app.get('/login', (req, res) => {
   const redirect = normalizeRedirect(req.query.redirect);
   res.setHeader('Cache-Control', 'no-store');
   res.send(renderTemplate(path.join(publicDir, 'login', 'index.html'), {
+    ...siteTemplateValues(),
     oauthHref: `/auth/discord/start?redirect=${encodeURIComponent(redirect)}`
   }));
 });
@@ -135,6 +167,7 @@ app.get('/profile', requireSession, async (req, res) => {
     const application = profile.application || {};
 
     res.send(renderTemplate(path.join(privateDir, 'profile', 'index.html'), {
+      ...siteTemplateValues(),
       displayName: req.user.globalName || req.user.username,
       discordUsername: req.user.username,
       discordUserId: req.user.id,
@@ -146,6 +179,7 @@ app.get('/profile', requireSession, async (req, res) => {
   } catch (err) {
     Log.warn('Profile', `Unable to load profile for userId=${req.user.id}: ${err.message}`);
     res.status(err.statusCode || 500).send(renderTemplate(path.join(privateDir, 'profile', 'error.html'), {
+      ...siteTemplateValues(),
       message: err.message || 'Profile unavailable.'
     }));
   }
