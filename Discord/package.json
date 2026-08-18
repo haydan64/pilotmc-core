@@ -1,0 +1,20 @@
+{
+  "name": "pilotmc-discord",
+  "version": "1.0.0",
+  "description": "PilotMC Discord integration",
+  "main": "bot.js",
+  "scripts": {
+    "start": "node bot.js",
+    "register": "node registerCommands.js",
+    "check": "node ../scripts/check.js ."
+  },
+  "license": "UNLICENSED",
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "discord.js": "^14.26.4",
+    "dotenv": "^17.4.2",
+    "socket.io-client": "^4.8.3"
+  }
+}

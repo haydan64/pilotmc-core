@@ -1,0 +1,18 @@
+{
+  "channels": {
+    "bdsLog": "",
+    "discordLog": "",
+    "joinLeave": ""
+  },
+  "webhooks": {
+    "minecraftChatName": ""
+  },
+  "minecraftServers": [],
+  "roles": {
+    "developer": "",
+    "admin": "",
+    "staff": "",
+    "guest": "",
+    "member": ""
+  }
+}
