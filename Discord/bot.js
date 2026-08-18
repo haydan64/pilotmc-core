@@ -1,4 +1,5 @@
 const path = require('path');
+require('dotenv').config({ path: path.join(__dirname, '.env') });
 const { Client, GatewayIntentBits, Partials, EmbedBuilder } = require('discord.js');
 const { loadCommands } = require('./loadCommands');
 const { loadModules } = require('./moduleLoader');
@@ -8,8 +9,6 @@ const { registerBackendSocketBridge } = require('./backendSocket');
 const { getAutoAllowlistServers, listMinecraftServers } = require('./minecraftServers');
 const Log = require('./log');
 const botConfig = require('./config');
-
-require('dotenv').config({ path: path.join(__dirname, '.env') });
 
 const DISCORD_LOG_CHANNEL = botConfig?.channels?.discordLog;
 const JOIN_LEAVE_CHANNEL = botConfig?.channels?.joinLeave;
