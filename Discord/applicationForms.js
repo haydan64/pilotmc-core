@@ -43,9 +43,16 @@ function buildReview(questions, responses, reviewIndex = null) {
 }
 
 function buildAnswerEmbeds(questions, responses) {
+  const perEmbed = Math.min(4096, Math.floor(6000 / Math.max(questions.length, 1)));
   return questions.map((question, index) => {
+    const title = `${index + 1}. ${question.formLabel || question.label}`;
+    const budget = perEmbed - title.length;
+    const promptBudget = Math.floor(budget / 3);
+    const prompt = question.prompt.length > promptBudget ? `${question.prompt.slice(0, promptBudget - 1)}…` : question.prompt;
     const answer = responses.get(question.id) || '*Not answered yet*';
-    return { title: `${index + 1}. ${question.formLabel || question.label}`, description: `${question.prompt}\n\n${answer.length > 500 ? `${answer.slice(0, 499)}â€¦` : answer}`, color: 0x5865f2 };
+    const answerBudget = budget - prompt.length - 2;
+    const shown = answer.length > answerBudget ? `${answer.slice(0, answerBudget - 1)}…` : answer;
+    return { title, description: `${prompt}\n\n${shown}`, color: 0x5865f2 };
   });
 }
 

@@ -43,5 +43,6 @@ test('instance caches reject another server identity',()=>{
 
 test('listing embeds reject unknown nested fields and unsafe image URLs',()=>{
   const value=configured();value.servers[0].listing.message.embeds=[{footer:{text:'Footer',secret:'hidden'}}];assert.throws(()=>assertConfig(value),/invalid embed footer/);
+  value.servers[0].listing.message.embeds=[{fields:[null]}];assert.throws(()=>assertConfig(value),/invalid embed field/);
   value.servers[0].listing.message.embeds=[{image:{url:'javascript:alert(1)'}}];assert.throws(()=>assertConfig(value),/invalid embed image url/);
 });

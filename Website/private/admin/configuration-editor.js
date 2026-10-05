@@ -36,7 +36,7 @@ function renderField(schema, value, change, location) {
   }
   const label=element('label',undefined,'field'); const input=element(schema.multiline?'textarea':'input'); input.setAttribute('aria-label', location);
   if(schema.type==='boolean'){input.type='checkbox';input.checked=value;label.append(input,document.createTextNode(schema.title));}
-  else {label.append(element('span',schema.title));if(!schema.multiline)input.type=schema.type==='integer'?'number':'text';input.value=value;if(schema.minimum!==undefined)input.min=schema.minimum;if(schema.maximum!==undefined)input.max=schema.maximum;if(schema.maxLength)input.maxLength=schema.maxLength;if(schema.minLength)input.minLength=schema.minLength;if(schema.pattern)input.pattern=schema.pattern;label.append(input);}
+  else {label.append(element('span',schema.title));if(!schema.multiline)input.type=schema.type==='integer'?'number':'text';input.value=value;if(schema.minimum!==undefined)input.min=schema.minimum;if(schema.maximum!==undefined)input.max=schema.maximum;if(schema.maxLength)input.maxLength=schema.maxLength;if(schema.minLength){input.minLength=schema.minLength;input.required=true;}if(schema.pattern)input.pattern=schema.pattern;label.append(input);}
   input.addEventListener('input',()=>{change(schema.type==='boolean'?input.checked:schema.type==='integer'?Number(input.value):input.value);dirty();});
   if(schema.description)label.append(element('small',schema.description)); return label;
 }
