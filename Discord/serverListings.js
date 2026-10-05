@@ -34,7 +34,7 @@ async function checkEligibility(server, interaction, backend) {
   const eligibility = await getAllowlistEligibility(configuredServer, interaction.guild, interaction.user.id);
   if (!eligibility.allowed) return `You cannot access this server: ${eligibility.reason}.`;
   if (server.requiredRoleId) {
-    const member = await interaction.guild.members.fetch(interaction.user.id);
+    const member = await interaction.guild.members.fetch({ user: interaction.user.id, force: true });
     if (!member.roles.cache.has(server.requiredRoleId)) return 'You do not have the required role for this listing.';
   }
   if (server.requiresAcceptedApplication) {

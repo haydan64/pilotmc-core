@@ -74,7 +74,7 @@ async function checkAdminRole(client, payload) {
   }
 
   const member = guild.members.cache.get(discordUserId)
-    || await guild.members.fetch(discordUserId).catch(() => null);
+    || await guild.members.fetch({ user: discordUserId, force: true }).catch(() => null);
   const allowed = Boolean(member?.roles?.cache?.has(ADMIN_ROLE_ID));
   return {
     ok: true,

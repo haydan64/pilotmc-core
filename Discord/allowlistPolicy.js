@@ -26,7 +26,7 @@ async function getAllowlistEligibility(server, guild, discordUserId) {
   if (!guild || !discordUserId) return { allowed: false, reason: 'membership_unavailable' };
   let member;
   try {
-    member = await guild.members.fetch(discordUserId);
+    member = await guild.members.fetch({ user: discordUserId, force: true });
   } catch (err) {
     if (err.code !== 10007) return { allowed: false, reason: 'membership_unavailable' };
     member = null;
