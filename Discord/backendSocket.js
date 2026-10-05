@@ -123,17 +123,18 @@ async function getAdminMetadata(client, payload = {}) {
   const discordUserIds = Array.isArray(payload.discordUserIds)
     ? [...new Set(payload.discordUserIds.map((id) => String(id || '').trim()).filter(Boolean))]
     : [];
-  const users = [];
-  for (const discordUserId of discordUserIds) {
-    const member = guild.members.cache.get(discordUserId)
-      || await guild.members.fetch(discordUserId).catch(() => null);
-    users.push({
+  const users = await Promise.all(discordUserIds.map(async (discordUserId) => {
+    const member = guild.members.cache.get(discordUserId) || null;
+    const discordUser = member?.user
+      || client.users.cache.get(discordUserId)
+      || await client.users.fetch(discordUserId).catch(() => null);
+    return {
       discordUserId,
-      username: member?.user?.username || null,
-      globalName: member?.user?.globalName || null,
-      displayName: member?.displayName || member?.user?.globalName || member?.user?.username || null
-    });
-  }
+      username: discordUser?.username || null,
+      globalName: discordUser?.globalName || null,
+      displayName: member?.displayName || discordUser?.globalName || discordUser?.username || null
+    };
+  }));
 
   const questions = Array.isArray(botConfig.questions)
     ? botConfig.questions

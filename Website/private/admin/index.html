@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Admin - PilotMC</title>
+    <title>Admin - {{siteName}}</title>
     <style>
       :root {
         color-scheme: dark;
@@ -219,6 +219,24 @@
         margin-top: 4px;
         overflow-wrap: anywhere;
       }
+      .question-section {
+        display: grid;
+        gap: 12px;
+        margin-top: 8px;
+        padding: 14px;
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        background: rgba(255, 255, 255, 0.025);
+      }
+      .question-section h3 {
+        margin: 0;
+        color: var(--gold);
+        font-size: 1rem;
+      }
+      .question-section .fact:first-of-type {
+        border-top: 0;
+        padding-top: 0;
+      }
       .actions {
         display: flex;
         flex-wrap: wrap;
@@ -258,7 +276,7 @@
     <div class="layout">
       <aside class="sidebar">
         <div class="brand">
-          <span>PilotMC Admin</span>
+          {{{brandLogo}}}<span>{{siteShortName}} Admin</span>
         </div>
         <div class="nav-group">
           <button class="nav-item active" data-view="general">General</button>
@@ -324,7 +342,7 @@
                 <table class="users-table">
                   <thead>
                     <tr>
-                      <th>Discord user</th>
+                      <th>Discord</th>
                       <th>Minecraft</th>
                       <th class="hide-mobile">Application</th>
                       <th>Joined</th>
@@ -367,6 +385,11 @@
           .replace(/'/g, '&#39;');
       }
 
+      function discordUserLabel(user, fallback = 'Unknown Discord user') {
+        const discord = user?.discord;
+        return discord?.displayName || discord?.globalName || discord?.username || fallback;
+      }
+
       function formatDate(value) {
         if (!value) return 'Unknown';
         const date = new Date(value);
@@ -385,6 +408,7 @@
 
       async function api(path, options = {}) {
         const response = await fetch(path, {
+          cache: 'no-store',
           ...options,
           headers: {
             'Content-Type': 'application/json',
@@ -451,7 +475,7 @@
       async function loadBackend() {
         const data = await api('/admin/api/backend');
         $('#backendGrid').innerHTML = [
-          metric('Backend', data.service || 'pilotmc-backend', true),
+          metric('Backend', data.service || 'Backend', true),
           metric('Uptime', formatDuration(data.uptimeSeconds)),
           metric('Database', data.database || 'Unknown'),
           metric('Minecraft servers', data.minecraftServers ?? 'Unknown'),
@@ -656,7 +680,7 @@
         state.applicationQuestions = data.questions || [];
         $('#usersTable').innerHTML = users.map((user) => `
           <tr class="clickable" data-user-id="${escapeHtml(user.discordUserId)}">
-            <td>${escapeHtml(user.discord?.username ? `@${user.discord.username}` : 'Unknown Discord user')}</td>
+            <td>${escapeHtml(discordUserLabel(user))}</td>
             <td>${escapeHtml(user.minecraftUsername || 'Not linked')}</td>
             <td class="hide-mobile">${escapeHtml(user.application?.status || 'unsubmitted')}</td>
             <td>${escapeHtml(formatDate(user.createdAt))}</td>
@@ -684,12 +708,15 @@
             </div>
           `).join('') || '<div class="fact"><span>Application questions</span><strong>Not configured</strong></div>';
           $('#userDetails').innerHTML = `
-            <div class="fact"><span>Discord username</span><strong>${escapeHtml(listedUser?.discord?.username ? `@${listedUser.discord.username}` : 'Unknown')}</strong></div>
+            <div class="fact"><span>Discord</span><strong>${escapeHtml(discordUserLabel(listedUser, 'Unknown'))}</strong></div>
             <div class="fact"><span>Discord ID</span><strong>${escapeHtml(discordUserId)}</strong></div>
             <div class="fact"><span>Minecraft username</span><strong>${escapeHtml(player.minecraftUsername || 'Not linked')}</strong></div>
             <div class="fact"><span>XUID</span><strong>${escapeHtml(player.xuid || 'Unknown')}</strong></div>
             <div class="fact"><span>Application</span><strong>${escapeHtml(application.status || 'unsubmitted')}</strong></div>
-            ${responseDetails}
+            <section class="question-section">
+              <h3>Application Questions</h3>
+              ${responseDetails}
+            </section>
             <div class="actions"><button class="danger" id="resetApplicationButton" type="button">Reset Application</button></div>
             <div id="userActionOutput" class="output"></div>
           `;
