@@ -1,3 +1,6 @@
+const { getAllowlistEligibility } = require('../../allowlistPolicy');
+const { sendUsernameChangeReview } = require('../../usernameChangeReview');
+const botConfig = require('../../config');
 const { SlashCommandBuilder } = require('discord.js');
 const { safeReply } = require('../interactionResponses');
 
@@ -15,16 +18,7 @@ module.exports = {
     .setDescription('Set your Minecraft username')
     .addStringOption((opt) => opt.setName('username').setDescription('Your Minecraft username').setRequired(true)),
 
-  async execute(interaction, { backend, rolesConfig, getAutoAllowlistServers }) {
-    const memberRoles = interaction.member?.roles?.cache;
-    if (rolesConfig?.member && !memberRoles?.has(rolesConfig.member)) {
-      await interaction.reply({
-        content: 'Only players with the Member role can use this command.',
-        ephemeral: true
-      });
-      return;
-    }
-
+  async execute(interaction, { backend, getAutoAllowlistServers }) {
     const minecraftUsername = interaction.options.getString('username', true).trim();
     if (!minecraftUsername) {
       await interaction.reply({ content: 'Please provide a valid username.', ephemeral: true });
@@ -63,12 +57,27 @@ module.exports = {
       return;
     }
 
+    if (existingByDiscord?.minecraftUsername) {
+      const review = await sendUsernameChangeReview(interaction.client, botConfig.channels?.usernameChangeReview, {
+        user: interaction.user,
+        oldUsername: existingByDiscord.minecraftUsername,
+        newUsername: minecraftUsername
+      });
+      await safeReply(interaction, { content: review.message });
+      return;
+    }
+
     const result = await backend.setMinecraftUsername(interaction.user.id, minecraftUsername);
     const autoAllowlistServers = getAutoAllowlistServers();
     const allowlistResults = [];
 
     for (const server of autoAllowlistServers) {
       try {
+        const eligibility = await getAllowlistEligibility(server, interaction.guild, interaction.user.id);
+        if (!eligibility.allowed) {
+          allowlistResults.push(`${server.name}: ${eligibility.reason}`);
+          continue;
+        }
         await backend.addPlayerToServerAllowlist(server.key, {
           discordUserId: interaction.user.id,
           permitted: true,

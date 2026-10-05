@@ -1,3 +1,4 @@
+const { getAllowlistEligibility } = require('../../allowlistPolicy');
 const { SlashCommandBuilder } = require('discord.js');
 const { replyWithRequestResult } = require('../interactionResponses');
 const { listMinecraftServers } = require('../../minecraftServers');
@@ -33,6 +34,16 @@ module.exports = {
     const serverKey = interaction.options.getString('server', true);
     const ignoresPlayerLimit = Boolean(interaction.options.getBoolean('ignores-player-limit') || false);
 
+    const server = listMinecraftServers().find((entry) => entry.key === serverKey);
+    if (!server) {
+      await interaction.reply({ content: 'This server is not configured.', ephemeral: true });
+      return;
+    }
+    const eligibility = await getAllowlistEligibility(server, interaction.guild, user.id);
+    if (!eligibility.allowed) {
+      await interaction.reply({ content: `Cannot allowlist this player: ${eligibility.reason}.`, ephemeral: true });
+      return;
+    }
     await replyWithRequestResult(
       interaction,
       backend.addPlayerToServerAllowlist(serverKey, {

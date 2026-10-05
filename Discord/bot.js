@@ -7,6 +7,8 @@ const backend = require('./backendClient');
 const { registerBackendSocketBridge } = require('./backendSocket');
 const { getAutoAllowlistServers, listMinecraftServers } = require('./minecraftServers');
 const Log = require('./log');
+const { getAllowlistPolicy } = require('./allowlistPolicy');
+const { registerUsernameChangeReview } = require('./usernameChangeReview');
 const botConfig = require('./config');
 
 require('dotenv').config({ path: path.join(__dirname, '.env') });
@@ -91,7 +93,7 @@ function logCommandUsage(client, interaction, status, error = null) {
 }
 
 async function unallowlistDepartedMember(member) {
-  const servers = listMinecraftServers();
+  const servers = listMinecraftServers().filter((server) => getAllowlistPolicy(server).removeOnDiscordLeave);
   if (!servers.length) return;
 
   let player = null;
@@ -310,6 +312,7 @@ async function createDiscordBot() {
   });
 
   registerCommandHandlers(client, commands);
+  registerUsernameChangeReview(client, buildCommandContext());
   registerDiscordAuditHandlers(client);
   await registerModuleHooks(client, modules, buildCommandContext());
   registerBackendSocketBridge(client, { modules, commands });

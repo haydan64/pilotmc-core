@@ -130,12 +130,12 @@ async function getPlayerByMinecraftUsername(minecraftUsername) {
   return requestBackend(`/api/players/minecraft/${encodeURIComponent(minecraftUsername)}`);
 }
 
-async function setMinecraftUsername(discordUserId, minecraftUsername) {
+async function setMinecraftUsername(discordUserId, minecraftUsername, actorDiscordUserId = discordUserId) {
   return requestBackend(`/api/players/discord/${encodeURIComponent(discordUserId)}/minecraft-username`, {
     method: 'PUT',
     headers: {
       'x-actor-type': 'discord_user',
-      'x-actor-id': discordUserId
+      'x-actor-id': actorDiscordUserId
     },
     body: JSON.stringify({ minecraftUsername })
   });

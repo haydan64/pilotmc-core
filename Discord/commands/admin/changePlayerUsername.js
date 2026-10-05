@@ -1,3 +1,4 @@
+const { getAllowlistEligibility } = require('../../allowlistPolicy');
 const { SlashCommandBuilder } = require('discord.js');
 const { safeReply } = require('../interactionResponses');
 const { listMinecraftServers } = require('../../minecraftServers');
@@ -52,6 +53,11 @@ module.exports = {
     const result = await backend.setMinecraftUsername(user.id, username);
     for (const server of servers) {
       try {
+        const eligibility = await getAllowlistEligibility(server, interaction.guild, user.id);
+        if (!eligibility.allowed) {
+          refreshResults.push(`${server.name || server.key}: ${eligibility.reason}`);
+          continue;
+        }
         await backend.addPlayerToServerAllowlist(server.key, {
           playerId: result.player.id,
           permitted: true,

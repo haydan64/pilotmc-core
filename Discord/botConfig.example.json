@@ -2,12 +2,25 @@
   "channels": {
     "bdsLog": "",
     "discordLog": "",
-    "joinLeave": ""
+    "joinLeave": "",
+    "usernameChangeReview": ""
   },
   "webhooks": {
     "minecraftChatName": ""
   },
-  "minecraftServers": [],
+  "minecraftServers": [
+    {
+      "key": "example",
+      "name": "Example Server",
+      "allowlist": {
+        "autoAllowlist": false,
+        "requiredRoleIds": [],
+        "blockedRoleIds": [],
+        "requireDiscordMembership": false,
+        "removeOnDiscordLeave": false
+      }
+    }
+  ],
   "roles": {
     "developer": "",
     "admin": "",

@@ -1,3 +1,4 @@
+const { getAllowlistPolicy } = require('./allowlistPolicy');
 const fs = require('fs');
 const path = require('path');
 
@@ -23,7 +24,7 @@ function getMinecraftServer(serverKey) {
 }
 
 function getAutoAllowlistServers() {
-  return listMinecraftServers().filter((server) => server.autoAllowlistOnSetMinecraftUsername);
+  return listMinecraftServers().filter((server) => getAllowlistPolicy(server).autoAllowlist);
 }
 
 function addMinecraftServerOption(builder) {

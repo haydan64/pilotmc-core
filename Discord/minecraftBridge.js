@@ -5,7 +5,7 @@ const Log = require('./log');
 const botConfig = require('./config');
 
 const CHAT_WEBHOOK_NAME = botConfig?.webhooks?.minecraftChatName;
-const MEMBER_ROLE_ID = botConfig?.roles?.member;
+const { getAllowlistPolicy, getAllowlistEligibility } = require('./allowlistPolicy');
 const channelWebhookCache = new Map();
 
 function getChatConfig(serverKey) {
@@ -86,31 +86,11 @@ async function getGuild(client) {
   return null;
 }
 
-async function checkMemberMembership(client, discordUserId) {
-  if (!discordUserId) return { ok: false, allowed: false, reason: 'missing_discord_user_id' };
-  if (!MEMBER_ROLE_ID) return { ok: false, allowed: false, reason: 'member_role_not_configured' };
-
-  const guild = getCachedGuild(client) || await getGuild(client);
-  if (!guild) return { ok: false, allowed: false, reason: 'guild_unavailable' };
-
-  const cachedMember = guild.members.cache.get(discordUserId) || null;
-  const member = cachedMember || await guild.members.fetch(discordUserId).catch(() => null);
-  if (!member) return { ok: true, allowed: false, reason: 'not_in_discord' };
-
-  return {
-    ok: true,
-    allowed: Boolean(member.roles?.cache?.has(MEMBER_ROLE_ID)),
-    reason: member.roles?.cache?.has(MEMBER_ROLE_ID)
-      ? cachedMember ? 'member_role_cached' : 'member_role_fetched'
-      : 'missing_member_role'
-  };
-}
-
 async function rejectMinecraftJoin(client, payload, username, reason, player = null) {
   const serverKey = payload.serverKey;
   const message = reason === 'not_linked'
     ? 'Please link your Discord account before joining.'
-    : 'Please rejoin Discord and make sure you have the configured member role.';
+    : 'Your Discord membership or roles do not meet this server\'s allowlist requirements.';
 
   await backend.sendServerCommand(
     serverKey,
@@ -152,6 +132,13 @@ async function verifyMinecraftJoin(client, payload = {}) {
   const username = payload.content?.username;
   if (!username) return { allowed: true };
 
+  const server = getMinecraftServer(payload.serverKey);
+  if (!server) return { allowed: false, reason: 'server_not_configured' };
+  const policy = getAllowlistPolicy(server);
+  if (!policy.requireDiscordMembership && !policy.requiredRoleIds.length && !policy.blockedRoleIds.length) {
+    return { allowed: true, reason: 'unrestricted' };
+  }
+
   let player = null;
   try {
     const result = await backend.getPlayerByMinecraftUsername(username);
@@ -170,7 +157,7 @@ async function verifyMinecraftJoin(client, payload = {}) {
     return { allowed: false, reason: 'not_linked' };
   }
 
-  const membership = await checkMemberMembership(client, player.discordUserId);
+  const membership = await getAllowlistEligibility(server, await getGuild(client), player.discordUserId);
   if (!membership.allowed) {
     await rejectMinecraftJoin(client, payload, username, membership.reason || 'missing_member_role', player);
     return { allowed: false, reason: membership.reason || 'missing_member_role' };
