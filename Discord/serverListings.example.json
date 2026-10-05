@@ -1,0 +1,13 @@
+[
+  {
+    "key": "example",
+    "name": "Example Server",
+    "channelId": "",
+    "requiresAcceptedApplication": false,
+    "buttonLabel": "Get Whitelisted",
+    "message": {
+      "content": "Join our Minecraft server.",
+      "embeds": []
+    }
+  }
+]

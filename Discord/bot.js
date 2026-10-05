@@ -5,6 +5,8 @@ const { loadCommands } = require('./loadCommands');
 const { loadModules } = require('./moduleLoader');
 const { safeReply, isRecoverableInteractionError } = require('./commands/interactionResponses');
 const backend = require('./backendClient');
+const { registerServerListings } = require('./serverListings');
+const { registerApplicationFlow } = require('./applicationFlow');
 const { registerBackendSocketBridge } = require('./backendSocket');
 const { getAutoAllowlistServers, listMinecraftServers } = require('./minecraftServers');
 const Log = require('./log');
@@ -313,7 +315,29 @@ async function createDiscordBot() {
   registerCommandHandlers(client, commands);
   registerUsernameChangeReview(client, buildCommandContext());
   registerDiscordAuditHandlers(client);
+  registerServerListings(client, backend);
   await registerModuleHooks(client, modules, buildCommandContext());
+  if (botConfig?.questions?.length) {
+    await registerApplicationFlow(client, {
+      waitingRoomChannelId: botConfig?.channels?.waitingRoom,
+      applyHereChannelId: botConfig?.channels?.applyHere,
+      applicationsChannelId: botConfig?.channels?.applications,
+      questions: botConfig.questions,
+      applicationIntro: botConfig.applicationIntro
+    }, {
+      saveApplicationResponse: backend.saveApplicationResponse,
+      getApplication: backend.getApplication,
+      getApplicationResponses: backend.getApplicationResponses,
+      getApplicationResponse: backend.getApplicationResponse,
+      deleteApplicationResponse: backend.deleteApplicationResponse,
+      setApplicationStatus: backend.setApplicationStatus,
+      sendToChannel,
+      ensureRole,
+      roleIds: ROLE_IDS,
+      rolesConfig: botConfig?.roles || {}
+    });
+    Log.info('Application Flow', `Registered application flow with ${botConfig.questions.length} questions.`);
+  }
   registerBackendSocketBridge(client, { modules, commands });
 
   return {

@@ -25,3 +25,6 @@ presetMessages/*
 **/modules/*
 !**/modules/.gitkeep
 **/botConfig.json
+
+# Deployment-specific Discord listing content
+**/serverListings.json

@@ -27,6 +27,14 @@ module.exports = {
 
     await interaction.deferReply({ ephemeral: true });
 
+    if (botConfig.requireAcceptedApplicationForLinking) {
+      const application = await backend.getApplication(interaction.user.id);
+      if (application?.application?.status !== 'accepted') {
+        await safeReply(interaction, { content: 'Your application must be accepted before linking or changing your Minecraft username.' });
+        return;
+      }
+    }
+
     const existingByDiscord = await backend
       .getPlayerByDiscordUserId(interaction.user.id)
       .then((result) => result.player)

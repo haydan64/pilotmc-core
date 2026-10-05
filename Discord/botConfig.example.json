@@ -3,7 +3,10 @@
     "bdsLog": "",
     "discordLog": "",
     "joinLeave": "",
-    "usernameChangeReview": ""
+    "usernameChangeReview": "",
+    "waitingRoom": "",
+    "applications": "",
+    "applyHere": ""
   },
   "webhooks": {
     "minecraftChatName": ""
@@ -27,5 +30,8 @@
     "staff": "",
     "guest": "",
     "member": ""
-  }
+  },
+  "questions": [],
+  "applicationIntro": "",
+  "requireAcceptedApplicationForLinking": false
 }
