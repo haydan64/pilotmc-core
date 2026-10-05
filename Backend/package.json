@@ -5,7 +5,8 @@
   "main": "main.js",
   "scripts": {
     "start": "node main.js",
-    "check": "node ../scripts/check.js ."
+    "check": "node ../scripts/check.js .",
+    "test": "node --test ../tests/configuration.test.js ../tests/configuration.integration.test.js"
   },
   "license": "UNLICENSED",
   "engines": {

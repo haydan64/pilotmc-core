@@ -15,7 +15,7 @@ function loadBotConfig() {
 }
 
 function listMinecraftServers() {
-  const botConfig = loadBotConfig();
+  const botConfig = require('../configuration/client').getActiveConfig() || loadBotConfig();
   return Array.isArray(botConfig.minecraftServers) ? botConfig.minecraftServers : [];
 }
 

@@ -18,6 +18,7 @@ function getChatConfig(serverKey) {
 }
 
 function getBdsLogChannelId() {
+  if (require('../configuration/client').getActiveConfig()) return botConfig?.channels?.bdsLog || botConfig?.channels?.discordLog || null;
   return process.env.DISCORD_BDS_LOG_CHANNEL_ID || botConfig?.channels?.bdsLog || botConfig?.channels?.discordLog || null;
 }
 
@@ -103,6 +104,7 @@ async function rejectMinecraftJoin(client, payload, username, reason, player = n
     Log.warn('Minecraft Bridge', `Failed to kick ${username} from ${serverKey}: ${err.message}`);
   });
 
+  if (reason === 'verification_unavailable' || reason === 'membership_unavailable') return;
   if (player?.id) {
     await backend.removePlayerFromServerAllowlist(serverKey, player.id, player.discordUserId).catch((err) => {
       Log.warn('Minecraft Bridge', `Failed to remove allowlist for ${username} on ${serverKey}: ${err.message}`);
@@ -149,7 +151,8 @@ async function verifyMinecraftJoin(client, payload = {}) {
       return { allowed: false, reason: 'not_linked' };
     }
     Log.warn('Minecraft Bridge', `Unable to verify linked Discord account for ${username}: ${err.message}`);
-    return { allowed: true, reason: 'verification_unavailable' };
+    await rejectMinecraftJoin(client, payload, username, 'verification_unavailable', player);
+    return { allowed: false, reason: 'verification_unavailable' };
   }
 
   if (!player?.discordUserId) {

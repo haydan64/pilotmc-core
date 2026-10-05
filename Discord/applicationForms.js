@@ -17,7 +17,7 @@ function buildForm(questions, responses, part) {
       .setRequired(Boolean(question.required)).setMaxLength(4000);
     if (responses.get(question.id)) input.setValue(responses.get(question.id).slice(0, 4000));
     modal.addLabelComponents(new LabelBuilder().setLabel(`${index + 1}. ${question.formLabel || question.label}`)
-      .setDescription(description).setTextInputComponent(input));
+      .setDescription(description.slice(0, 100)).setTextInputComponent(input));
   }
   return modal;
 }
@@ -26,7 +26,7 @@ function buildReview(questions, responses, reviewIndex = null) {
   const answered = questions.filter(q => (responses.get(q.id) || '').trim()).length;
   const groups = Array.from({ length: Math.ceil(questions.length / 5) }, (_, part) =>
     new ButtonBuilder().setCustomId(`application-part:${part}`)
-      .setLabel(`Questions ${part * 5 + 1}�${Math.min(part * 5 + 5, questions.length)}`)
+      .setLabel(`Questions ${part * 5 + 1}–${Math.min(part * 5 + 5, questions.length)}`)
       .setStyle(ButtonStyle.Primary));
   const row = new ActionRowBuilder().addComponents(
     ...groups,
@@ -45,7 +45,7 @@ function buildReview(questions, responses, reviewIndex = null) {
 function buildAnswerEmbeds(questions, responses) {
   return questions.map((question, index) => {
     const answer = responses.get(question.id) || '*Not answered yet*';
-    return { title: `${index + 1}. ${question.formLabel || question.label}`, description: `${question.prompt}\n\n${answer.length > 500 ? `${answer.slice(0, 499)}…` : answer}`, color: 0x5865f2 };
+    return { title: `${index + 1}. ${question.formLabel || question.label}`, description: `${question.prompt}\n\n${answer.length > 500 ? `${answer.slice(0, 499)}â€¦` : answer}`, color: 0x5865f2 };
   });
 }
 

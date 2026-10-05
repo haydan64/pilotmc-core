@@ -28,3 +28,6 @@ presetMessages/*
 
 # Deployment-specific Discord listing content
 **/serverListings.json
+
+# One-time central configuration import (deployment data)
+**/config.initial.json

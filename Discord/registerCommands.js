@@ -20,6 +20,10 @@ async function registerCommands(commands) {
 
 async function main() {
   require('dotenv').config({ path: path.join(__dirname, '.env') });
+  const configuration = require('../configuration/client');
+  await configuration.initialize({ service: 'discord', directory: __dirname, log: Log, poll: false });
+  const settings = configuration.getActiveConfig();
+  if (settings) { process.env.DISCORD_CLIENT_ID = settings.clientId; process.env.DISCORD_GUILD_ID = settings.guildId; }
   const modules = await loadModules();
   const moduleCommandPaths = modules.flatMap((mod) => mod.commandPaths || []);
   const commands = loadCommands([

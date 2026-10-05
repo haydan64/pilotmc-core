@@ -38,3 +38,7 @@ npm --prefix Website run check
 The check command recursively validates every JavaScript file in the application, including locally installed optional modules.
 
 Use the same strong `BACKEND_API_TOKEN` for Core services and instances. Backend HTTP and Socket.IO access fails closed when the token is absent or incorrect.
+
+## Central configuration
+
+Admins can manage deployment settings from Website at `/admin/configuration`. Backend stores validated revisions and history; services fetch scoped configuration and cache the last valid version. See [Configuration](Docs/Configuration.md) for the database migration, bootstrap credentials, and restart behavior. Legacy JSON files remain supported until a service is opted into central configuration.

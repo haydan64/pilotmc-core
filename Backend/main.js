@@ -5,12 +5,15 @@ const { Server } = require('socket.io');
 const database = require('./database/database');
 const Log = require('./log');
 const { loadModules } = require('./moduleLoader');
+const { createConfigStore, registerConfigurationRoutes, readSeed } = require('./configuration');
+const configurationStore = createConfigStore(database);
+require('dotenv').config({ path: path.join(__dirname, '.env') });
 require('dotenv').config({ path: path.join(__dirname, 'database', '.env') });
 
 const PORT = Number(process.env.PORT || 3000);
 const API_TOKEN = process.env.BACKEND_API_TOKEN || '';
-const AGENT_TIMEOUT_MS = Number(process.env.AGENT_TIMEOUT_MS || 10000);
-const DISCORD_AUTH_TIMEOUT_MS = Number(process.env.DISCORD_AUTH_TIMEOUT_MS || 5000);
+let AGENT_TIMEOUT_MS = Number(process.env.AGENT_TIMEOUT_MS || 10000);
+let DISCORD_AUTH_TIMEOUT_MS = Number(process.env.DISCORD_AUTH_TIMEOUT_MS || 5000);
 const STARTED_AT = new Date();
 const BUILD_MARKER = 'socket-ack-relay-2026-06-28';
 const MINECRAFT_EVENT_HANDLER_MARKER = 'minecraft-event-handler-v2';
@@ -516,6 +519,8 @@ app.get('/api/service-agents', requireApiToken, asyncRoute(async (req, res) => {
   res.json({ ok: true, agents });
 }));
 
+registerConfigurationRoutes({ app, store: configurationStore, requireApiToken, asyncRoute, requestDiscordAdminCheck });
+
 app.get('/api/discord/users/:discordUserId/admin', requireApiToken, asyncRoute(async (req, res) => {
   const discordUserId = requireString(req.params.discordUserId, 'discordUserId');
   const result = await requestDiscordAdminCheck(discordUserId);
@@ -864,12 +869,22 @@ app.use((err, req, res, next) => {
   res.status(statusCode).json({
     ok: false,
     error: err.message || 'Internal server error',
-    agentResponse: err.agentResponse
+    agentResponse: err.agentResponse,
+    validationErrors: err.validationErrors
   });
 });
 
 async function start() {
   await database.validateSchema();
+  await configurationStore.initialize(readSeed);
+  const snapshot = await configurationStore.read();
+  AGENT_TIMEOUT_MS = snapshot.config.backend.agentTimeoutMs;
+  DISCORD_AUTH_TIMEOUT_MS = snapshot.config.backend.discordAuthTimeoutMs;
+  await configurationStore.report('backend', snapshot.revision, snapshot.revision);
+  setInterval(async () => {
+    try { const latest = await configurationStore.read(); await configurationStore.report('backend', snapshot.revision, latest.revision); }
+    catch (err) { Log.warn('Configuration', `Status report failed: ${err.message}`); }
+  }, 30000).unref();
   server.listen(PORT, () => {
     Log.info('Backend', `pilotmc-backend listening on :${PORT}`);
     Log.info('Backend', `Build marker ${BUILD_MARKER}`);

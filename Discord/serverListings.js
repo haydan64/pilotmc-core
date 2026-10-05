@@ -6,7 +6,8 @@ const path = require('path');
 const { getMinecraftServer } = require('./minecraftServers');
 const { getAllowlistEligibility } = require('./allowlistPolicy');
 const configPath = path.join(__dirname, 'serverListings.json');
-const listings = fs.existsSync(configPath) ? JSON.parse(fs.readFileSync(configPath, 'utf8')) : [];
+const central = require('../configuration/client').getActiveConfig();
+const listings = central ? central.minecraftServers.filter(server => server.listing.enabled).map(server => ({ key: server.key, name: server.name, ...server.listing })) : fs.existsSync(configPath) ? JSON.parse(fs.readFileSync(configPath, 'utf8')) : [];
 
 function listingPayload(server) {
   const message = server.message || {};

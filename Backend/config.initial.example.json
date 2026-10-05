@@ -1,0 +1,44 @@
+{
+  "discord": {
+    "guildId": "",
+    "clientId": "",
+    "channels": {
+      "bdsLog": "",
+      "discordLog": "",
+      "joinLeave": "",
+      "waitingRoom": "",
+      "applications": "",
+      "applyHere": "",
+      "usernameChangeReview": ""
+    },
+    "roles": {
+      "developer": "",
+      "admin": "",
+      "staff": "",
+      "guest": "",
+      "member": ""
+    },
+    "webhooks": {
+      "minecraftChatName": ""
+    },
+    "applicationIntro": "",
+    "requireAcceptedApplicationForLinking": false,
+    "questions": []
+  },
+  "website": {
+    "siteName": "PilotMC",
+    "siteShortName": "PilotMC",
+    "siteDescription": "",
+    "publicUrl": "",
+    "discordRedirectUri": "",
+    "discordClientId": "",
+    "discordGuildId": "",
+    "logoUrl": "",
+    "faviconUrl": ""
+  },
+  "backend": {
+    "agentTimeoutMs": 10000,
+    "discordAuthTimeoutMs": 5000
+  },
+  "servers": []
+}

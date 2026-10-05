@@ -14,4 +14,5 @@ function loadBotConfig() {
   return {};
 }
 
-module.exports = loadBotConfig();
+const configuration = require('../configuration/client');
+module.exports = configuration.getActiveConfig() || loadBotConfig();
